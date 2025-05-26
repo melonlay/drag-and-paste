@@ -69,7 +69,10 @@ class I18nManager:
             # 語言選項
             "language": "語言",
             "chinese": "中文",
-            "english": "English"
+            "english": "English",
+            
+            # 狀態載入
+            "state_loaded": "已載入 {} 個檔案"
         }
         
         # 英文翻譯
@@ -121,7 +124,10 @@ class I18nManager:
             # Language options
             "language": "Language",
             "chinese": "中文",
-            "english": "English"
+            "english": "English",
+            
+            # State loading
+            "state_loaded": "Loaded {} files"
         }
     
     def get_text(self, key: str, *args) -> str:

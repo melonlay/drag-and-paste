@@ -31,6 +31,8 @@ MANIFEST
 
 # Project specific
 PROJECT_SUMMARY.md
+test_drag_functionality.py
+test_state_management.py
 
 # OS
 .DS_Store

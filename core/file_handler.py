@@ -2,6 +2,7 @@
 import os
 from typing import List, Tuple
 from core.file_validator import FileValidator
+from core.state_manager import StateManager
 from utils.i18n import i18n
 
 
@@ -12,6 +13,10 @@ class FileHandler:
         self.file_list = []  # 儲存檔案路徑列表
         self.file_contents = []  # 儲存檔案內容列表
         self.deleted_files = []  # 儲存被刪除的檔案（用於復原功能）
+        self.state_manager = StateManager()  # 狀態管理器
+        
+        # 載入上次的狀態
+        self._load_previous_state()
     
     def add_file(self, file_path: str) -> Tuple[bool, str]:
         """
@@ -38,6 +43,9 @@ class FileHandler:
             # 新增到列表
             self.file_list.append(file_path)
             self.file_contents.append(content)
+            
+            # 保存狀態
+            self._save_current_state()
             
             return True, i18n.get_text("file_added")
         except Exception as e:
@@ -66,6 +74,9 @@ class FileHandler:
             del self.file_list[index]
             del self.file_contents[index]
             
+            # 保存狀態
+            self._save_current_state()
+            
             return True
         return False
     
@@ -86,6 +97,9 @@ class FileHandler:
         insert_index = min(deleted_file['index'], len(self.file_list))
         self.file_list.insert(insert_index, deleted_file['path'])
         self.file_contents.insert(insert_index, deleted_file['content'])
+        
+        # 保存狀態
+        self._save_current_state()
         
         return True
     
@@ -123,6 +137,9 @@ class FileHandler:
         self.file_list.clear()
         self.file_contents.clear()
         self.deleted_files.clear()
+        
+        # 清除保存的狀態
+        self.state_manager.clear_state()
     
     def _read_file_content(self, file_path: str) -> str:
         """
@@ -145,4 +162,52 @@ class FileHandler:
             except Exception as e:
                 raise e
         
-        raise UnicodeDecodeError(i18n.get_text("read_file_error", "無法使用任何編碼讀取檔案")) 
+        raise UnicodeDecodeError(i18n.get_text("read_file_error", "無法使用任何編碼讀取檔案"))
+    
+    def _save_current_state(self):
+        """保存目前狀態"""
+        deleted_file_paths = [f['path'] for f in self.deleted_files]
+        self.state_manager.save_state(self.file_list, deleted_file_paths)
+    
+    def _load_previous_state(self):
+        """載入上次的狀態"""
+        try:
+            state_data = self.state_manager.load_state()
+            if not state_data:
+                return
+            
+            # 載入檔案列表
+            for file_path in state_data.get("file_paths", []):
+                if os.path.exists(file_path):
+                    try:
+                        content = self._read_file_content(file_path)
+                        self.file_list.append(file_path)
+                        self.file_contents.append(content)
+                    except Exception as e:
+                        print(f"載入檔案失敗 {file_path}: {e}")
+            
+            # 載入已刪除檔案列表（用於復原功能）
+            for file_path in state_data.get("deleted_files", []):
+                if os.path.exists(file_path):
+                    try:
+                        content = self._read_file_content(file_path)
+                        deleted_file = {
+                            'path': file_path,
+                            'content': content,
+                            'index': len(self.file_list)  # 預設插入到最後
+                        }
+                        self.deleted_files.append(deleted_file)
+                    except Exception as e:
+                        print(f"載入已刪除檔案失敗 {file_path}: {e}")
+                        
+        except Exception as e:
+            print(f"載入狀態失敗: {e}")
+    
+    def get_file_paths(self) -> List[str]:
+        """
+        取得完整檔案路徑列表
+        
+        Returns:
+            List[str]: 檔案路徑列表
+        """
+        return self.file_list.copy() 

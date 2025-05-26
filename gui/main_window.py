@@ -88,20 +88,28 @@ class MainWindow:
         # 設定拖拽功能
         self._setup_drag_and_drop()
         
+        # 載入之前的狀態
+        self._load_previous_state()
+        
         # 綁定視窗關閉事件
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
     
     def _setup_drag_and_drop(self):
         """設定拖拽功能"""
-        # 註冊拖拽事件
-        self.root.drop_target_register(tkdnd.DND_FILES)
+        # 註冊多種拖拽類型
+        dnd_types = [tkdnd.DND_FILES, tkdnd.DND_TEXT]
+        
+        # 主視窗註冊拖拽事件
+        for dnd_type in dnd_types:
+            self.root.drop_target_register(dnd_type)
         self.root.dnd_bind('<<Drop>>', self._on_drop)
         
         # 為主要元件也註冊拖拽
-        self.file_list_widget.listbox.drop_target_register(tkdnd.DND_FILES)
-        self.file_list_widget.listbox.dnd_bind('<<Drop>>', self._on_drop)
+        for dnd_type in dnd_types:
+            self.file_list_widget.listbox.drop_target_register(dnd_type)
+            self.text_display_widget.text_widget.drop_target_register(dnd_type)
         
-        self.text_display_widget.text_widget.drop_target_register(tkdnd.DND_FILES)
+        self.file_list_widget.listbox.dnd_bind('<<Drop>>', self._on_drop)
         self.text_display_widget.text_widget.dnd_bind('<<Drop>>', self._on_drop)
     
     def _on_drop(self, event):
@@ -122,34 +130,66 @@ class MainWindow:
         Returns:
             List[str]: 檔案路徑列表
         """
-        # 處理Windows路徑格式
         files = []
-        if data.startswith('{') and data.endswith('}'):
-            # 多個檔案的格式: {file1} {file2} ...
-            data = data[1:-1]  # 移除大括號
-            current_file = ""
-            in_quotes = False
-            
-            i = 0
-            while i < len(data):
-                char = data[i]
-                if char == '"':
-                    in_quotes = not in_quotes
-                elif char == ' ' and not in_quotes:
-                    if current_file.strip():
-                        files.append(current_file.strip().strip('"'))
-                        current_file = ""
-                else:
-                    current_file += char
-                i += 1
-            
-            if current_file.strip():
-                files.append(current_file.strip().strip('"'))
-        else:
-            # 單個檔案
-            files = [data.strip().strip('{}').strip('"')]
         
-        return files
+        # 清理資料
+        data = data.strip()
+        
+        # 處理不同格式的拖拽資料
+        if not data:
+            return files
+        
+        # 方法1: 處理標準檔案路徑格式
+        if data.startswith('{') and data.endswith('}'):
+            # 單個檔案格式: {file}
+            if data.count('{') == 1 and data.count('}') == 1:
+                clean_path = data[1:-1].strip().strip('"')
+                if clean_path and os.path.exists(clean_path):
+                    files = [clean_path]
+            else:
+                # 多個檔案的格式: {file1} {file2} ...
+                # 使用正則表達式或簡單分割
+                import re
+                pattern = r'\{([^}]+)\}'
+                matches = re.findall(pattern, data)
+                for match in matches:
+                    clean_path = match.strip().strip('"')
+                    if clean_path and os.path.exists(clean_path):
+                        files.append(clean_path)
+        
+        # 方法2: 處理純文字路徑（從其他程式拖拽出來的路徑）
+        elif os.path.exists(data):
+            files = [data]
+        
+        # 方法3: 處理多行文字路徑
+        elif '\n' in data or '\r' in data:
+            lines = data.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+            for line in lines:
+                line = line.strip().strip('"').strip("'")
+                if line and os.path.exists(line):
+                    files.append(line)
+        
+        # 方法4: 處理空格分隔的路徑
+        elif ' ' in data:
+            parts = data.split()
+            for part in parts:
+                part = part.strip().strip('"').strip("'")
+                if part and os.path.exists(part):
+                    files.append(part)
+        
+        # 方法5: 單個檔案路徑
+        else:
+            clean_path = data.strip().strip('{}').strip('"').strip("'")
+            if clean_path and os.path.exists(clean_path):
+                files = [clean_path]
+        
+        # 去除重複並驗證檔案存在
+        unique_files = []
+        for file_path in files:
+            if file_path not in unique_files and os.path.isfile(file_path):
+                unique_files.append(file_path)
+        
+        return unique_files
     
     def _add_file(self, file_path: str):
         """
@@ -229,6 +269,20 @@ class MainWindow:
         file_names = self.file_handler.get_file_list()
         for filename in file_names:
             self.file_list_widget.add_file(filename)
+    
+    def _load_previous_state(self):
+        """載入之前的狀態"""
+        # FileHandler 已經在初始化時載入了狀態
+        # 這裡只需要更新GUI顯示
+        if self.file_handler.file_list:
+            self._reload_file_list()
+            self._update_text_display()
+            
+            # 更新狀態訊息
+            file_count = len(self.file_handler.file_list)
+            self.status_label.config(
+                text=i18n.get_text("state_loaded", str(file_count))
+            )
     
     def _on_closing(self):
         """視窗關閉事件"""

@@ -10,12 +10,13 @@ A GUI application developed with Python and Tkinter that supports dragging and d
 ## Features
 
 ### 🎯 Main Functions
-1. **Drag & Drop Support** - Drag text files to the program window
+1. **Enhanced Drag & Drop Support** - Support multiple file drag sources (File Explorer, other apps, text paths)
 2. **File List Management** - Display added file list
 3. **Text Content Display** - Show file content in scrollable text area
 4. **File Operations** - Support delete and restore functions
 5. **Content Copy** - One-click copy all text content to clipboard
 6. **Multi-language Support** - Support Chinese and English interface switching
+7. **State Persistence** - Automatically save program state and restore file list on restart
 
 ### 📁 Supported File Formats
 - Programming language files: `.py`, `.cpp`, `.c`, `.h`, `.java`, `.js`, `.php`, `.go`, `.rs`, etc.
@@ -49,7 +50,10 @@ python main.py
 ### Basic Operations
 
 #### 1. Adding Files
-- Drag text files from File Explorer to any position in the program window
+- **From File Explorer**: Drag text files from File Explorer to any position in the program window
+- **From Other Applications**: Support dragging file paths from text editors, IDEs, and other programs
+- **Multiple Path Formats**: Support standard paths, quoted paths, multi-line paths, etc.
+- **Auto State Saving**: Automatically save to system temp directory after adding files
 - Supported files will be automatically added to the left list
 - File content will be displayed in the right text area
 
@@ -109,7 +113,8 @@ drag_n_paste/
 │   └── test_sample.txt    # Text test file
 ├── core/                  # Core functionality modules
 │   ├── file_handler.py    # File handling
-│   └── file_validator.py  # File validation
+│   ├── file_validator.py  # File validation
+│   └── state_manager.py   # State management
 ├── gui/                   # GUI component modules
 │   ├── main_window.py     # Main window
 │   ├── file_list_widget.py # File list component
@@ -133,6 +138,8 @@ drag_n_paste/
 - Support multiple text file formats
 - Duplicate file detection
 - Full Unicode character support
+- **Enhanced Drag Parsing**: Support multiple drag sources and path formats
+- **State Persistence**: Automatically save/load program state to system temp directory
 
 ### 🎨 User-Friendly Interface
 - Modern GUI design
@@ -157,6 +164,7 @@ A: Please check:
 - File is in supported text format
 - File is not locked by other programs
 - File path doesn't contain special characters
+- Try different drag methods (from File Explorer, text editors, etc.)
 
 **Q: File content displays garbled text?**
 A: The program automatically tries multiple encodings. If problems persist, please check if the file encoding is in a common format.
