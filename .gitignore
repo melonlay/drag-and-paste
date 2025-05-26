@@ -33,6 +33,7 @@ MANIFEST
 PROJECT_SUMMARY.md
 test_drag_functionality.py
 test_state_management.py
+test_clipboard_functionality.py
 
 # OS
 .DS_Store

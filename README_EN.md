@@ -15,8 +15,9 @@ A GUI application developed with Python and Tkinter that supports dragging and d
 3. **Text Content Display** - Show file content in scrollable text area
 4. **File Operations** - Support delete and restore functions
 5. **Content Copy** - One-click copy all text content to clipboard
-6. **Multi-language Support** - Support Chinese and English interface switching
-7. **State Persistence** - Automatically save program state and restore file list on restart
+6. **Smart Clipboard** - Ctrl+V intelligently analyzes clipboard content (files or text)
+7. **Multi-language Support** - Support Chinese and English interface switching
+8. **State Persistence** - Automatically save program state and restore file list on restart
 
 ### 📁 Supported File Formats
 - Programming language files: `.py`, `.cpp`, `.c`, `.h`, `.java`, `.js`, `.php`, `.go`, `.rs`, etc.
@@ -39,6 +40,7 @@ pip install -r requirements.txt
 Main dependencies:
 - `tkinterdnd2` - Drag and drop functionality
 - `pyperclip` - Clipboard operations
+- `pywin32` - Windows clipboard API
 
 ## Usage
 
@@ -53,6 +55,9 @@ python main.py
 - **From File Explorer**: Drag text files from File Explorer to any position in the program window
 - **From Other Applications**: Support dragging file paths from text editors, IDEs, and other programs
 - **Multiple Path Formats**: Support standard paths, quoted paths, multi-line paths, etc.
+- **Smart Clipboard Paste**: Press Ctrl+V to intelligently analyze clipboard content
+  - File Copy: Copy files from File Explorer and paste to automatically read file content
+  - Text Copy: Copy text and paste to automatically create paste-text_*.txt files
 - **Auto State Saving**: Automatically save to system temp directory after adding files
 - Supported files will be automatically added to the left list
 - File content will be displayed in the right text area
@@ -67,7 +72,13 @@ python main.py
 - **Copy Content**: Click "Copy Content" button to copy all text to clipboard
 - **Clear Content**: Click "Clear Content" button to clear text display area
 
-#### 4. Language Switching
+#### 4. Clipboard Operations
+- **Smart Paste**: Press Ctrl+V to automatically analyze clipboard content
+- **File Paste**: Copy files from File Explorer (Ctrl+C), then paste in program (Ctrl+V)
+- **Text Paste**: Copy any text content, paste to automatically create temporary text files
+- **Auto Naming**: Text files automatically named as paste-text_1.txt, paste-text_2.txt, etc., avoiding overwrite
+
+#### 5. Language Switching
 - **Language Selection**: Click language dropdown menu in top-right corner
 - **Supported Languages**: Traditional Chinese and English
 - **Real-time Switching**: Interface updates immediately after language selection
@@ -101,8 +112,9 @@ drag_n_paste/
 ├── requirements.txt        # Dependencies
 ├── README.md              # Documentation (Chinese)
 ├── README_EN.md           # Documentation (English)
-├── docs.md                # Documentation index
+├── USAGE_EXAMPLES.md      # Usage examples
 ├── CHANGELOG.md           # Changelog
+├── LICENSE                # GPL 3.0 License
 ├── install.bat            # Windows installation script
 ├── run.bat               # Windows startup script
 ├── img/                   # Image resources
@@ -114,7 +126,8 @@ drag_n_paste/
 ├── core/                  # Core functionality modules
 │   ├── file_handler.py    # File handling
 │   ├── file_validator.py  # File validation
-│   └── state_manager.py   # State management
+│   ├── state_manager.py   # State management
+│   └── clipboard_handler.py # Clipboard handling
 ├── gui/                   # GUI component modules
 │   ├── main_window.py     # Main window
 │   ├── file_list_widget.py # File list component
@@ -139,6 +152,7 @@ drag_n_paste/
 - Duplicate file detection
 - Full Unicode character support
 - **Enhanced Drag Parsing**: Support multiple drag sources and path formats
+- **Smart Clipboard**: Ctrl+V automatically analyzes file or text content
 - **State Persistence**: Automatically save/load program state to system temp directory
 
 ### 🎨 User-Friendly Interface
@@ -151,6 +165,11 @@ drag_n_paste/
 
 ### 📋 Convenient Operations
 - Drag and drop file addition
+- **Ctrl+V Smart Clipboard Paste**:
+  - Automatically detect file or text content
+  - Files automatically read and added to list
+  - Text automatically creates paste-text_*.txt files
+  - Avoid filename conflicts
 - One-click copy all content
 - Restore delete function
 - Batch clear operations
@@ -172,6 +191,13 @@ A: The program automatically tries multiple encodings. If problems persist, plea
 **Q: Copy function not working?**
 A: Please ensure `pyperclip` package is installed and system clipboard function is working properly.
 
+**Q: Ctrl+V paste function not working?**
+A: Please check:
+- `pywin32` package is installed (Windows clipboard API)
+- Clipboard has content (text or files)
+- Program window has focus
+- For file paste, ensure files are supported text formats
+
 ## Quick Start
 
 1. **Install Dependencies**:
@@ -189,6 +215,8 @@ A: Please ensure `pyperclip` package is installed and system clipboard function 
 3. **Test Features**:
    - Drag `test_sample/test_chinese.txt` to test Unicode character support
    - Drag `test_sample/test_sample.py` to test code file support
+   - Copy some text, then press Ctrl+V to test text paste function
+   - Copy text files from File Explorer, then press Ctrl+V to test file paste function
    - Switch language using the dropdown in top-right corner
 
 ## Version History
@@ -197,11 +225,12 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 ## Related Links
 
+- [Usage Examples](USAGE_EXAMPLES.md)
 - [更新日誌 (Changelog)](CHANGELOG.md)
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the GPL 3.0 License.
 
 ## Contributing
 

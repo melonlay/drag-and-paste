@@ -72,7 +72,15 @@ class I18nManager:
             "english": "English",
             
             # 狀態載入
-            "state_loaded": "已載入 {} 個檔案"
+            "state_loaded": "已載入 {} 個檔案",
+            
+            # 剪貼簿功能
+            "clipboard_empty": "剪貼簿為空",
+            "paste_failed": "貼上失敗: {}",
+            "files_pasted": "已貼上 {} 個檔案",
+            "no_valid_files_in_clipboard": "剪貼簿中沒有有效的文字檔案",
+            "text_pasted": "已貼上文字檔案: {}",
+            "create_text_file_failed": "創建文字檔案失敗: {}"
         }
         
         # 英文翻譯
@@ -127,7 +135,15 @@ class I18nManager:
             "english": "English",
             
             # State loading
-            "state_loaded": "Loaded {} files"
+            "state_loaded": "Loaded {} files",
+            
+            # Clipboard functionality
+            "clipboard_empty": "Clipboard is empty",
+            "paste_failed": "Paste failed: {}",
+            "files_pasted": "Pasted {} files",
+            "no_valid_files_in_clipboard": "No valid text files in clipboard",
+            "text_pasted": "Pasted text file: {}",
+            "create_text_file_failed": "Failed to create text file: {}"
         }
     
     def get_text(self, key: str, *args) -> str:

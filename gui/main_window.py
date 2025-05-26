@@ -3,9 +3,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import tkinterdnd2 as tkdnd
 import os
+import re
 from typing import List
 
 from core.file_handler import FileHandler
+from core.clipboard_handler import ClipboardHandler
 from gui.file_list_widget import FileListWidget
 from gui.text_display_widget import TextDisplayWidget
 from gui.language_selector import LanguageSelector
@@ -19,6 +21,9 @@ class MainWindow:
     def __init__(self):
         # 初始化檔案處理器
         self.file_handler = FileHandler()
+        
+        # 初始化剪貼簿處理器
+        self.clipboard_handler = ClipboardHandler()
         
         # 創建主視窗
         self.root = tkdnd.Tk()
@@ -91,6 +96,9 @@ class MainWindow:
         # 載入之前的狀態
         self._load_previous_state()
         
+        # 綁定鍵盤事件
+        self._setup_keyboard_bindings()
+        
         # 綁定視窗關閉事件
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
     
@@ -149,7 +157,6 @@ class MainWindow:
             else:
                 # 多個檔案的格式: {file1} {file2} ...
                 # 使用正則表達式或簡單分割
-                import re
                 pattern = r'\{([^}]+)\}'
                 matches = re.findall(pattern, data)
                 for match in matches:
@@ -282,6 +289,101 @@ class MainWindow:
             file_count = len(self.file_handler.file_list)
             self.status_label.config(
                 text=i18n.get_text("state_loaded", str(file_count))
+            )
+    
+    def _setup_keyboard_bindings(self):
+        """設定鍵盤綁定"""
+        # 綁定 Ctrl+V 到剪貼簿處理
+        self.root.bind('<Control-v>', self._on_paste)
+        self.root.bind('<Control-V>', self._on_paste)
+        
+        # 確保焦點在主視窗上以接收鍵盤事件
+        self.root.focus_set()
+    
+    def _on_paste(self, event=None):
+        """處理 Ctrl+V 貼上事件"""
+        try:
+            # 分析剪貼簿內容
+            clipboard_type, file_paths, text_content = self.clipboard_handler.analyze_clipboard()
+            
+            if clipboard_type == 'files':
+                # 處理檔案
+                self._handle_clipboard_files(file_paths)
+            elif clipboard_type == 'text':
+                # 處理文字
+                self._handle_clipboard_text(text_content)
+            else:
+                # 剪貼簿為空
+                self.status_label.config(text=i18n.get_text("clipboard_empty"))
+                
+        except Exception as e:
+            messagebox.showerror(
+                i18n.get_text("error"), 
+                i18n.get_text("paste_failed", str(e))
+            )
+    
+    def _handle_clipboard_files(self, file_paths: List[str]):
+        """
+        處理剪貼簿中的檔案
+        
+        Args:
+            file_paths (List[str]): 檔案路徑列表
+        """
+        added_count = 0
+        for file_path in file_paths:
+            success, message = self.file_handler.add_file(file_path)
+            if success:
+                filename = os.path.basename(file_path)
+                self.file_list_widget.add_file(filename)
+                added_count += 1
+        
+        if added_count > 0:
+            # 更新文字顯示
+            self._update_text_display()
+            
+            # 更新狀態
+            self.status_label.config(
+                text=i18n.get_text("files_pasted", str(added_count))
+            )
+        else:
+            self.status_label.config(text=i18n.get_text("no_valid_files_in_clipboard"))
+    
+    def _handle_clipboard_text(self, text_content: str):
+        """
+        處理剪貼簿中的文字
+        
+        Args:
+            text_content (str): 文字內容
+        """
+        try:
+            # 創建臨時文字檔案
+            temp_file_path = self.clipboard_handler.create_text_file(text_content)
+            
+            # 添加到檔案列表
+            success, message = self.file_handler.add_file(temp_file_path)
+            if success:
+                filename = os.path.basename(temp_file_path)
+                self.file_list_widget.add_file(filename)
+                
+                # 更新文字顯示
+                self._update_text_display()
+                
+                # 更新狀態
+                self.status_label.config(
+                    text=i18n.get_text("text_pasted", filename)
+                )
+            else:
+                # 如果添加失敗，刪除臨時檔案
+                try:
+                    os.remove(temp_file_path)
+                except:
+                    pass
+                self.status_label.config(text=message)
+                
+        except Exception as e:
+            messagebox.showerror(
+                i18n.get_text("error"), 
+                i18n.get_text("create_text_file_failed", str(e))
             )
     
     def _on_closing(self):
