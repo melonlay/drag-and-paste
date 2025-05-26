@@ -1,5 +1,8 @@
 # Text File Drag & Drop Tool
 
+> **Language Selection / 語言選擇:**  
+> 🇺🇸 [English](README_EN.md) | 🇹🇼 [繁體中文](README.md)
+
 A GUI application developed with Python and Tkinter that supports dragging and dropping text files to display their content.
 
 ![Program Demo](img/demo.png)
@@ -186,7 +189,6 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 ## Related Links
 
-- [中文說明文件 (Chinese Documentation)](README.md)
 - [更新日誌 (Changelog)](CHANGELOG.md)
 
 ## License

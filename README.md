@@ -1,5 +1,8 @@
 # 文字檔案拖拽工具
 
+> **語言選擇 / Language Selection:**  
+> 🇹🇼 [繁體中文](README.md) | 🇺🇸 [English](README_EN.md)
+
 一個基於Python和Tkinter開發的GUI應用程式，支援拖拽文字檔案並顯示其內容。
 
 ![程式示意圖](img/demo.png)
@@ -186,7 +189,6 @@ A: 請確認已安裝 `pyperclip` 套件，並且系統剪貼簿功能正常。
 
 ## 相關連結
 
-- [English Documentation (英文說明文件)](README_EN.md)
 - [更新日誌 (Changelog)](CHANGELOG.md)
 
 ## 授權
